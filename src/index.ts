@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { db } from "./db";
 import { users } from "./db/schema";
+import { userRoutes } from "./routes/user-routes";
 
 const app = new Elysia()
   .get("/", () => ({
@@ -9,32 +10,18 @@ const app = new Elysia()
   }))
   .get("/users", async () => {
     try {
-      const allUsers = await db.select().from(users);
+      const allUsers = await db.select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        createdAt: users.createdAt,
+      }).from(users);
       return { success: true, data: allUsers };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   })
-  .post(
-    "/users",
-    async ({ body }) => {
-      try {
-        await db.insert(users).values({
-          name: body.name,
-          email: body.email,
-        });
-        return { success: true, message: "User created successfully" };
-      } catch (error: any) {
-        return { success: false, error: error.message };
-      }
-    },
-    {
-      body: t.Object({
-        name: t.String(),
-        email: t.String({ format: "email" }),
-      }),
-    }
-  )
+  .use(userRoutes)
   .listen(3000);
 
 console.log(
