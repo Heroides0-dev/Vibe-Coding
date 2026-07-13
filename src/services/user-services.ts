@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { users } from "../db/schema";
+import { users, session } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export interface RegisterUserData {
@@ -59,6 +59,46 @@ export async function registerUser(data: RegisterUserData) {
       name: newUser.name,
       email: newUser.email,
       created_at: newUser.createdAt ? toLocalISOString(newUser.createdAt) : null,
+    },
+  };
+}
+
+export interface LoginUserData {
+  email: string;
+  password: string;
+}
+
+export async function loginUser(data: LoginUserData) {
+  // 1. Find user by email
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, data.email))
+    .limit(1);
+
+  if (!user) {
+    return { success: false, error: "User not found" };
+  }
+
+  // 2. Verify password using Bun's built-in password verify
+  const isPasswordCorrect = await Bun.password.verify(data.password, user.password);
+  if (!isPasswordCorrect) {
+    return { success: false, error: "User not found" };
+  }
+
+  // 3. Generate token (UUID)
+  const token = crypto.randomUUID();
+
+  // 4. Save session to db
+  await db.insert(session).values({
+    token: token,
+    userId: user.id,
+  });
+
+  return {
+    success: true,
+    session: {
+      token: token,
     },
   };
 }
