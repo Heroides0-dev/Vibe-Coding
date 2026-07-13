@@ -102,3 +102,35 @@ export async function loginUser(data: LoginUserData) {
     },
   };
 }
+
+export async function getCurrentUser(token: string) {
+  if (!token) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const [result] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      createdAt: users.createdAt,
+    })
+    .from(session)
+    .innerJoin(users, eq(session.userId, users.id))
+    .where(eq(session.token, token))
+    .limit(1);
+
+  if (!result) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  return {
+    success: true,
+    user: {
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      created_at: result.createdAt ? toLocalISOString(result.createdAt) : null,
+    },
+  };
+}
