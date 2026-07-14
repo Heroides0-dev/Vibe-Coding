@@ -26,6 +26,20 @@ export const userRoutes = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email" }),
         password: t.String(),
       }),
+      response: {
+        201: t.Object({
+          message: t.String(),
+          user: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            created_at: t.Union([t.String(), t.Null()]),
+          }),
+        }),
+        400: t.Object({
+          error: t.String(),
+        }),
+      },
       detail: {
         summary: "Registrasi User Baru",
         description: "Mendaftarkan akun pengguna baru ke dalam sistem.",
@@ -56,6 +70,18 @@ export const userRoutes = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email" }),
         password: t.String(),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          session: t.Object({
+            token: t.String(),
+          }),
+        }),
+        400: t.Object({
+          error: t.String(),
+          session: t.Null(),
+        }),
+      },
       detail: {
         summary: "Login User",
         description: "Melakukan login pengguna dan mengembalikan token sesi (session token).",
@@ -98,6 +124,21 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       headers: t.Object({
         authorization: t.Optional(t.String({ description: "Format: Bearer <session_token>" })),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          user: t.Object({
+            id: t.Number(),
+            name: t.String(),
+            email: t.String(),
+            created_at: t.Union([t.String(), t.Null()]),
+          }),
+        }),
+        401: t.Object({
+          error: t.String(),
+          user: t.Null(),
+        }),
+      },
       detail: {
         summary: "Get Current User",
         description: "Mengambil data profil pengguna yang saat ini sedang login menggunakan token sesi.",
@@ -142,6 +183,18 @@ export const userRoutes = new Elysia({ prefix: "/api" })
       headers: t.Object({
         authorization: t.Optional(t.String({ description: "Format: Bearer <session_token>" })),
       }),
+      response: {
+        200: t.Object({
+          message: t.String(),
+          session: t.Object({
+            token: t.String(),
+          }),
+        }),
+        401: t.Object({
+          error: t.String(),
+          user: t.Null(),
+        }),
+      },
       detail: {
         summary: "Logout User",
         description: "Mengakhiri sesi pengguna dengan menghapus token sesi aktif dari database.",
