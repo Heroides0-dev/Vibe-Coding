@@ -8,6 +8,14 @@ export interface RegisterUserData {
   password: string;
 }
 
+/**
+ * Mengonversi objek Date menjadi string format ISO lokal (YYYY-MM-DDTHH:mm:ss±hh:mm).
+ * Fungsi ini memperhitungkan offset zona waktu lokal agar sesuai dengan waktu setempat,
+ * bukan waktu UTC standar.
+ * 
+ * @param date - Objek Date yang akan dikonversi.
+ * @returns String representasi waktu lokal dalam format ISO.
+ */
 function toLocalISOString(date: Date): string {
   const offsetMinutes = date.getTimezoneOffset();
   const tzoffset = offsetMinutes * 60000;
@@ -19,6 +27,15 @@ function toLocalISOString(date: Date): string {
   return `${localISOTime.split('.')[0]}${sign}${hours}:${minutes}`;
 }
 
+/**
+ * Mendaftarkan pengguna baru ke dalam database.
+ * Proses meliputi pengecekan duplikasi email, proses hashing kata sandi (password), 
+ * dan penyimpanan data user baru ke database.
+ * 
+ * @param data - Objek yang berisi name, email, dan password dari pengguna baru.
+ * @returns Objek yang menandakan status keberhasilan (success) dan data user (jika sukses) 
+ *          atau pesan error (jika gagal).
+ */
 export async function registerUser(data: RegisterUserData) {
   // 1. Check if email already exists
   const existingUser = await db
@@ -68,6 +85,15 @@ export interface LoginUserData {
   password: string;
 }
 
+/**
+ * Melakukan proses otentikasi (login) pengguna.
+ * Mencari email di database, memverifikasi kecocokan password dengan hash yang tersimpan,
+ * dan menghasilkan serta menyimpan token sesi (session) jika berhasil.
+ * 
+ * @param data - Objek yang berisi email dan password.
+ * @returns Objek yang menandakan keberhasilan (success) dan token sesi (jika sukses)
+ *          atau pesan error "User not found" (jika email/password salah).
+ */
 export async function loginUser(data: LoginUserData) {
   // 1. Find user by email
   const [user] = await db
@@ -103,6 +129,15 @@ export async function loginUser(data: LoginUserData) {
   };
 }
 
+/**
+ * Mengambil profil pengguna yang saat ini sedang login berdasarkan token sesi.
+ * Melakukan validasi apakah token ada dan masih valid dengan melakukan query 
+ * gabungan (JOIN) antara tabel session dan users.
+ * 
+ * @param token - String token sesi dari header Authorization.
+ * @returns Objek keberhasilan beserta data user (jika token valid) 
+ *          atau pesan error "Unauthorized" (jika token tidak valid).
+ */
 export async function getCurrentUser(token: string) {
   if (!token) {
     return { success: false, error: "Unauthorized" };
@@ -135,6 +170,14 @@ export async function getCurrentUser(token: string) {
   };
 }
 
+/**
+ * Melakukan proses logout pengguna dengan menghapus token sesi terkait dari database.
+ * Mencegah token tersebut digunakan kembali di kemudian waktu.
+ * 
+ * @param token - String token sesi dari header Authorization yang ingin dihapus.
+ * @returns Objek keberhasilan beserta nilai token yang dihapus (jika sukses)
+ *          atau pesan error "Unauthorized" (jika token tidak valid/sudah dihapus).
+ */
 export async function logoutUser(token: string) {
   if (!token) {
     return { success: false, error: "Unauthorized" };
