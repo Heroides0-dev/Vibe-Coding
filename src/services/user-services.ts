@@ -134,3 +134,28 @@ export async function getCurrentUser(token: string) {
     },
   };
 }
+
+export async function logoutUser(token: string) {
+  if (!token) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const [existingSession] = await db
+    .select()
+    .from(session)
+    .where(eq(session.token, token))
+    .limit(1);
+
+  if (!existingSession) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  await db
+    .delete(session)
+    .where(eq(session.token, token));
+
+  return {
+    success: true,
+    token: token,
+  };
+}
