@@ -26,6 +26,11 @@ export const userRoutes = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email" }),
         password: t.String(),
       }),
+      detail: {
+        summary: "Registrasi User Baru",
+        description: "Mendaftarkan akun pengguna baru ke dalam sistem.",
+        tags: ["Users"],
+      },
     }
   )
   .post(
@@ -51,6 +56,11 @@ export const userRoutes = new Elysia({ prefix: "/api" })
         email: t.String({ format: "email" }),
         password: t.String(),
       }),
+      detail: {
+        summary: "Login User",
+        description: "Melakukan login pengguna dan mengembalikan token sesi (session token).",
+        tags: ["Users"],
+      },
     }
   )
   .get(
@@ -83,6 +93,16 @@ export const userRoutes = new Elysia({ prefix: "/api" })
         message: "User get successfully",
         user: result.user,
       };
+    },
+    {
+      headers: t.Object({
+        authorization: t.Optional(t.String({ description: "Format: Bearer <session_token>" })),
+      }),
+      detail: {
+        summary: "Get Current User",
+        description: "Mengambil data profil pengguna yang saat ini sedang login menggunakan token sesi.",
+        tags: ["Users"],
+      },
     }
   )
   .delete(
@@ -117,5 +137,15 @@ export const userRoutes = new Elysia({ prefix: "/api" })
           token: result.token,
         },
       };
+    },
+    {
+      headers: t.Object({
+        authorization: t.Optional(t.String({ description: "Format: Bearer <session_token>" })),
+      }),
+      detail: {
+        summary: "Logout User",
+        description: "Mengakhiri sesi pengguna dengan menghapus token sesi aktif dari database.",
+        tags: ["Users"],
+      },
     }
   );
